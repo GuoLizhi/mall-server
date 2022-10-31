@@ -3,6 +3,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CartModule } from './cart/cart.module';
+import { User } from './user/user.entity';
 import { UserModule } from './user/user.module';
 
 @Module({
@@ -15,7 +16,7 @@ import { UserModule } from './user/user.module';
       username: 'root',
       password: '12345678',
       database: 'mall',
-      entities: [],
+      entities: [User],
       synchronize: true,
     }),
     UserModule,
