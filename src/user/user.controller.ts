@@ -1,7 +1,7 @@
-import { Body, Controller, Post } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { AuthService } from 'src/auth/auth.service';
 import { encrypt, makeSalt } from 'src/utils/crypto';
-import { ErrResp, SuccResp } from 'src/utils/response';
 import { LoginDto, RegistDto } from './user.dto';
 import { UserService } from './user.service';
 
@@ -9,25 +9,12 @@ import { UserService } from './user.service';
 export class UserController {
   constructor(
     private userService: UserService,
-    private readonly jwtService: JwtService,
+    private readonly authService: AuthService,
   ) {}
 
   @Post('/login')
   async login(@Body() loginDto: LoginDto) {
-    const { username, password } = loginDto;
-    const userSalt = await this.userService.getUserPwdSalt(username);
-    if (!userSalt) {
-      return new ErrResp('用户名或者密码错误');
-    }
-    const realPwd = encrypt(password, userSalt);
-    const user = await this.userService.findOne(username, realPwd);
-    if (user) {
-      return new SuccResp({
-        token: this.jwtService.sign(user),
-      });
-    } else {
-      return new ErrResp('密码错误');
-    }
+    return this.authService.login(loginDto);
   }
 
   @Post('/regist')
