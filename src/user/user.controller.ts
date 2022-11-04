@@ -1,7 +1,7 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
+import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from 'src/auth/auth.service';
 import { encrypt, makeSalt } from 'src/utils/crypto';
+import { ErrResp } from 'src/utils/response';
 import { LoginDto, RegistDto } from './user.dto';
 import { UserService } from './user.service';
 
@@ -14,7 +14,15 @@ export class UserController {
 
   @Post('/login')
   async login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+    const user = await this.authService.validateUser(
+      loginDto.username,
+      loginDto.password,
+    );
+    if (user) {
+      return this.authService.login(loginDto);
+    } else {
+      return new ErrResp('用户名或密码错误');
+    }
   }
 
   @Post('/regist')

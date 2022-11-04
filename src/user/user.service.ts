@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ErrResp } from 'src/utils/response';
+import { ErrResp, SuccResp } from 'src/utils/response';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
 
@@ -12,8 +12,16 @@ export class UserService {
   ) {}
 
   async save(user: Partial<User>) {
-    const resp = await this.userRepository.save(user);
-    return resp;
+    try {
+      const resp = await this.userRepository.save(user);
+      return new SuccResp(resp);
+    } catch (err) {
+      if (err.code === 'ER_DUP_ENTRY') {
+        return new ErrResp('用户名重复');
+      } else {
+        return new ErrResp();
+      }
+    }
   }
 
   async findOne(username: string, password: string) {
